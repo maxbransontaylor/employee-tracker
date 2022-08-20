@@ -168,7 +168,77 @@ function updateEmployeeRole() {
     });
   });
 }
-
+function showDepartments() {
+  db.query(`SELECT * FROM department`, function (err, results) {
+    console.table(results);
+    showOptions();
+  });
+}
+function addDepartment() {
+  inquirer
+    .prompt([
+      {
+        type: "input",
+        name: "department",
+        message: "What is the name of the new department?",
+      },
+    ])
+    .then(({ department }) => {
+      const sql = `INSERT INTO department(name) VALUES (?)`;
+      const params = department;
+      db.query(sql, params, (err, result) => {
+        if (err) {
+          console.log(err);
+          return;
+        }
+        console.log(result);
+        showOptions();
+      });
+    });
+}
+function showRoles() {
+  db.query(
+    `SELECT role.id,role.title,role.salary,department.name AS department_name FROM role LEFT JOIN department ON role.department_id=department.id`,
+    function (err, results) {
+      console.table(results);
+      showOptions();
+    }
+  );
+}
+function addRole() {
+  db.query(`SELECT * FROM department`, function (err, results) {
+    const departments = results.map(({ name, id }) => {
+      return { name: name, value: id };
+    });
+    inquirer
+      .prompt([
+        { type: "input", name: "title", message: "What is this role's title?" },
+        {
+          type: "number",
+          name: "salary",
+          message: "What is the yearly salary for this role?",
+        },
+        {
+          type: "list",
+          name: "department",
+          message: "Which department does this role fall under?",
+          choices: departments,
+        },
+      ])
+      .then((answers) => {
+        const sql = `INSERT INTO role(title,salary,department_id) VALUES (?,?,?)`;
+        const params = [answers.title, answers.salary, answers.department];
+        db.query(sql, params, (err, result) => {
+          if (err) {
+            console.log(err);
+            return;
+          }
+          console.log(result);
+          showOptions();
+        });
+      });
+  });
+}
 function showOptions() {
   inquirer
     .prompt([
@@ -177,6 +247,10 @@ function showOptions() {
         name: "choice",
         message: "What would you like to do?",
         choices: [
+          "View All Departments",
+          "Add a Department",
+          "View All Roles",
+          "Add a New Role",
           "View All Employees",
           "Add an Employee",
           "Remove Employee",
@@ -187,6 +261,18 @@ function showOptions() {
     ])
     .then(({ choice }) => {
       switch (choice) {
+        case "View All Departments":
+          showDepartments();
+          break;
+        case "Add a Department":
+          addDepartment();
+          break;
+        case "View All Roles":
+          showRoles();
+          break;
+        case "Add a New Role":
+          addRole();
+          break;
         case "View All Employees":
           showEmployees();
           break;
