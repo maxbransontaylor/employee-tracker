@@ -63,10 +63,11 @@ LEFT JOIN department ON role.department_id = department.id;`,
     }
   );
 }
-
+//add a new employee
 function addEmployee() {
   let managerChoices = [];
   let roleChoices = [];
+  //creates array of role choices for the first question
   db.query(`SELECT * FROM role`, function (err, results) {
     roleChoices = results.map(({ id, title }) => {
       return {
@@ -74,6 +75,7 @@ function addEmployee() {
         name: title,
       };
     });
+    //creates an array of all employees to select an employee's manager in the last question
     db.query(`SELECT * FROM employee`, (err, results) => {
       managerChoices = results.map(({ id, first_name, last_name }) => {
         return { name: `${first_name} ${last_name}`, value: id };
@@ -127,6 +129,7 @@ function addEmployee() {
 function updateEmployeeRole() {
   let employeeChoices = [];
   let roleChoices = [];
+  //creates an array of role choices to update an employee
   db.query(`SELECT * FROM role`, function (err, results) {
     roleChoices = results.map(({ id, title }) => {
       return {
@@ -134,6 +137,7 @@ function updateEmployeeRole() {
         name: title,
       };
     });
+    //returns an array of all employees to select in the first question
     db.query(`SELECT * FROM employee`, (err, results) => {
       employeeChoices = results.map(({ id, first_name, last_name }) => {
         return { name: `${first_name} ${last_name}`, value: id };
@@ -168,12 +172,14 @@ function updateEmployeeRole() {
     });
   });
 }
+//show all departments
 function showDepartments() {
   db.query(`SELECT * FROM department`, function (err, results) {
     console.table(results);
     showOptions();
   });
 }
+//adds a department
 function addDepartment() {
   inquirer
     .prompt([
@@ -196,6 +202,7 @@ function addDepartment() {
       });
     });
 }
+//shows all roles, leaves out department.id and role.department_id for cleaner response for user
 function showRoles() {
   db.query(
     `SELECT role.id,role.title,role.salary,department.name AS department_name FROM role LEFT JOIN department ON role.department_id=department.id`,
@@ -205,7 +212,9 @@ function showRoles() {
     }
   );
 }
+//add a new role
 function addRole() {
+  //return array of all departments to select from
   db.query(`SELECT * FROM department`, function (err, results) {
     const departments = results.map(({ name, id }) => {
       return { name: name, value: id };
